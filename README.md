@@ -192,27 +192,12 @@ http://127.0.0.1:5000
 
 ## 🎯 Use Cases
 
-* Deepfake voice detection
+* voice detection
 * Fraud prevention
-* Voice authentication systems
+* Voice authentication system
 * Media verification
 * Cybersecurity applications
 
----
-
-## 📸 Screenshots
-
-(Add screenshots of your system here)
-
-Example:
-
-```
-screenshots/
-   login_page.png
-   upload_page.png
-   prediction_result.png
-   admin_dashboard.png
-```
 
 ---
 
