@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Voice Clone Detection{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h2>Profile</h2>
+    <p><strong>Username:</strong> {{ current_user.username }}</p>
+
+    <h3>My Detections</h3>
+    <table>
+      <tr>
+        <th>Date (IST)</th>
+        <th>Time (IST)</th>
+        <th>Audio Name</th>
+        <th>Prediction Result</th>
+      </tr>
+      {% for log in logs %}
+        <tr>
+          <td>{{ log.created_at|ist_date }}</td>
+          <td>{{ log.created_at|ist_time }}</td>
+          <td>{{ log.file_name }}</td>
+          <td>{{ log.result_label }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <p style="margin-top:16px;">
+      <a class="btn" href="{{ url_for('dashboard') }}">Back to Upload</a>
+    </p>
+  </div>
+{% endblock %}
+

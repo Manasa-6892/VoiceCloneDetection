@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}My Detection History - Voice Clone Detection{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h2>My Detection History</h2>
+    <p class="text-muted">
+      Detailed view of all your past detections.
+    </p>
+    <table>
+      <tr>
+        <th>Date (IST)</th>
+        <th>Time (IST)</th>
+        <th>File Name</th>
+        <th>Result</th>
+        <th>Action</th>
+      </tr>
+      {% for log in logs %}
+        <tr>
+          <td>{{ log.created_at|ist_date }}</td>
+          <td>{{ log.created_at|ist_time }}</td>
+          <td>{{ log.file_name }}</td>
+          <td>{{ log.result_label }}</td>
+          <td><a href="{{ url_for('detection_detail', detection_id=log.id) }}">View Details</a></td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <p style="margin-top:16px;">
+      <a class="btn" href="{{ url_for('dashboard') }}">Back to Upload</a>
+    </p>
+  </div>
+{% endblock %}
+

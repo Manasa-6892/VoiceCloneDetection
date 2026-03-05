@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}All Detections (Admin) - Voice Clone Detection{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h2>All Detections (Admin)</h2>
+
+    <h3>Filters</h3>
+    <form method="GET">
+      <label>Date:</label>
+      <input type="date" name="date" value="{{ request.args.get('date', '') }}">
+
+      <label>Type:</label>
+      <select name="detection_type">
+        <option value="">All</option>
+        <option value="upload" {% if request.args.get('detection_type') == 'upload' %}selected{% endif %}>Upload</option>
+        <option value="recorded" {% if request.args.get('detection_type') == 'recorded' %}selected{% endif %}>Recorded</option>
+      </select>
+
+      <label>
+        <input type="checkbox" name="suspicious" value="1"
+               {% if request.args.get('suspicious') == '1' %}checked{% endif %}>
+        Suspicious only
+      </label>
+
+      <button type="submit">Apply</button>
+    </form>
+
+    <table>
+      <tr>
+        <th>Date (IST)</th>
+        <th>Time (IST)</th>
+        <th>User ID</th>
+        <th>File Name</th>
+        <th>Result</th>
+        <th>Suspicious?</th>
+        <th>Type</th>
+        <th>Action</th>
+      </tr>
+      {% for log in logs %}
+        <tr>
+          <td>{{ log.created_at|ist_date }}</td>
+          <td>{{ log.created_at|ist_time }}</td>
+          <td>{{ log.user_id }}</td>
+          <td>{{ log.file_name }}</td>
+          <td>{{ log.result_label }}</td>
+          <td>{{ 'Yes' if log.is_suspicious else 'No' }}</td>
+          <td>{{ log.detection_type }}</td>
+          <td><a href="{{ url_for('detection_detail', detection_id=log.id) }}">View</a></td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <p style="margin-top:16px;">
+      <a class="btn" href="{{ url_for('dashboard') }}">Back to Upload</a>
+    </p>
+  </div>
+{% endblock %}
+

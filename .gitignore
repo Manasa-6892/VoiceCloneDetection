@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+
+uploads/
+app/uploads/
+audio_dataset/
+processed_audio/
+features/
+
+*.wav
+*.db

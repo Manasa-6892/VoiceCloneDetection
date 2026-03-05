@@ -1,0 +1,10 @@
+Flask
+Flask-Login
+Flask-Bcrypt
+Flask-SQLAlchemy
+tensorflow
+librosa
+numpy
+soundfile
+scikit-learn
+joblib

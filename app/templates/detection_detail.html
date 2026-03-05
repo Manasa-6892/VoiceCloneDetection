@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Detection Detail - Voice Clone Detection{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h2>Detection Detail</h2>
+
+    <p><strong>Date (IST):</strong> {{ log.created_at|ist_date }}</p>
+    <p><strong>Time (IST):</strong> {{ log.created_at|ist_time }}</p>
+    <p><strong>File Name:</strong> {{ log.file_name }}</p>
+    <p><strong>Result:</strong> {{ log.result_label }}</p>
+    <p><strong>Confidence:</strong> {{ '%.2f'|format(log.confidence * 100) }}%</p>
+    <p><strong>Type:</strong> {{ log.detection_type }}</p>
+    <p><strong>Suspicious:</strong> {{ 'Yes' if log.is_suspicious else 'No' }}</p>
+
+    <h3>Audio Playback</h3>
+    <audio controls>
+      <source src="{{ url_for('serve_audio', filename=log.file_name) }}" type="audio/wav">
+      Your browser does not support the audio element.
+    </audio>
+
+    <p style="margin-top:16px;">
+      <a class="btn" href="{{ url_for('dashboard') }}">Upload Another File</a>
+    </p>
+  </div>
+{% endblock %}
+

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Details - Voice Clone Detection{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h2>Detection Logs (Admin)</h2>
+
+    <form method="GET">
+      <label>Search by audio name:</label>
+      <input type="text" name="search" value="{{ request.args.get('search', '') }}">
+
+      <label>Prediction:</label>
+      <select name="prediction">
+        <option value="">All</option>
+        <option value="Human" {% if request.args.get('prediction') == 'Human' %}selected{% endif %}>Human</option>
+        <option value="Cloned" {% if request.args.get('prediction') == 'Cloned' %}selected{% endif %}>Cloned</option>
+      </select>
+
+      <label>Date:</label>
+      <input type="date" name="date" value="{{ request.args.get('date', '') }}">
+
+      <button type="submit">Apply</button>
+    </form>
+
+    <table>
+      <tr>
+        <th>Username</th>
+        <th>Date (IST)</th>
+        <th>Time (IST)</th>
+        <th>Audio Name</th>
+        <th>Prediction</th>
+        <th>Confidence</th>
+      </tr>
+      {% for log in logs %}
+        <tr>
+          <td>{{ log.user.username }}</td>
+          <td>{{ log.created_at|ist_date }}</td>
+          <td>{{ log.created_at|ist_time }}</td>
+          <td>{{ log.file_name }}</td>
+          <td>{{ log.result_label }}</td>
+          <td>{{ '%.2f'|format(log.confidence * 100) }}%</td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <p style="margin-top:16px;">
+      <a class="btn" href="{{ url_for('dashboard') }}">Back to Upload</a>
+    </p>
+  </div>
+{% endblock %}
+
