@@ -27,7 +27,8 @@
       <button type="submit">Apply</button>
     </form>
 
-    <table>
+    <!-- TABLE -->
+    <table border="1" style="width:100%; margin-top:15px;">
       <tr>
         <th>Date (IST)</th>
         <th>Time (IST)</th>
@@ -38,8 +39,9 @@
         <th>Type</th>
         <th>Action</th>
       </tr>
+
       {% for log in logs %}
-        <tr>
+        <tr class="log-row" {% if loop.index > 3 %}style="display:none;"{% endif %}>
           <td>{{ log.created_at|ist_date }}</td>
           <td>{{ log.created_at|ist_time }}</td>
           <td>{{ log.user_id }}</td>
@@ -52,9 +54,39 @@
       {% endfor %}
     </table>
 
+    <!-- BUTTONS (NO CONDITION NOW) -->
+    <div style="margin-top:15px;">
+      <button id="showMoreBtn" onclick="showMore()" class="btn">Show More</button>
+      <button id="showLessBtn" onclick="showLess()" class="btn" style="display:none;">Show Less</button>
+    </div>
+
     <p style="margin-top:16px;">
       <a class="btn" href="{{ url_for('dashboard') }}">Back to Upload</a>
     </p>
   </div>
-{% endblock %}
 
+  <!-- JS -->
+  <script>
+    function showMore() {
+      let rows = document.querySelectorAll('.log-row');
+      rows.forEach(row => row.style.display = '');
+
+      document.getElementById('showMoreBtn').style.display = 'none';
+      document.getElementById('showLessBtn').style.display = 'inline-block';
+    }
+
+    function showLess() {
+      let rows = document.querySelectorAll('.log-row');
+
+      rows.forEach((row, index) => {
+        if (index >= 3) {
+          row.style.display = 'none';
+        }
+      });
+
+      document.getElementById('showMoreBtn').style.display = 'inline-block';
+      document.getElementById('showLessBtn').style.display = 'none';
+    }
+  </script>
+
+{% endblock %}

@@ -37,7 +37,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, os.pardir))
 
-TEST_UPLOAD_FOLDER = os.path.join("uploads", "test_audios")
+TEST_UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads", "test_audios")
 os.makedirs(TEST_UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = TEST_UPLOAD_FOLDER
 
@@ -211,10 +211,10 @@ def predict_file(file_path):
 def signup():
     if current_user.is_authenticated:
         return redirect(url_for("dashboard"))
+
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-        requested_role = (request.form.get("role") or "").lower()
 
         if not username or not password:
             flash("Username and password are required.")
@@ -224,17 +224,19 @@ def signup():
             flash("Username already exists.")
             return redirect(url_for("signup"))
 
-        # Only allow an "admin" signup if there is no admin yet.
         role = "user"
-        if requested_role == "admin":
-            existing_admin = User.query.filter_by(role="admin").first()
-            if not existing_admin:
-                role = "admin"
 
         pw_hash = bcrypt.generate_password_hash(password).decode("utf-8")
-        user = User(username=username, password_hash=pw_hash, role=role)
+
+        user = User(
+            username=username,
+            password_hash=pw_hash,
+            role=role
+        )
+
         db.session.add(user)
         db.session.commit()
+
         flash("Account created. Please log in.")
         return redirect(url_for("login"))
 
@@ -360,18 +362,21 @@ def detect():
         detection_type="upload",
         is_suspicious=is_suspicious,
     )
+
     db.session.add(log)
-    # Create notification for cloned voices
+    db.session.commit()   # ✅ VERY IMPORTANT (ID GENERATED HERE)
+
+    # ✅ STEP 2: CREATE NOTIFICATION AFTER COMMIT
     if label == "Cloned (AI) Voice":
         notif_msg = f"⚠ Cloned voice detected in file: {original_name}"
         notif = Notification(
             user_id=current_user.id,
             message=notif_msg,
             is_read=False,
-            detection_id=log.id,
+            detection_id=log.id   # ✅ NOW VALID
         )
         db.session.add(notif)
-    db.session.commit()
+        db.session.commit()
 
     return redirect(url_for("detection_detail", detection_id=log.id))
 
@@ -447,7 +452,15 @@ def profile():
         .order_by(DetectionLog.created_at.desc())
         .all()
     )
-    return render_template("profile.html", logs=logs)
+    ai_count = sum(1 for log in logs if log.result_label == "Cloned (AI) Voice")
+    human_count = sum(1 for log in logs if log.result_label == "Human Voice")
+
+    return render_template(
+        "profile.html",
+        logs=logs,
+        ai_count=ai_count,
+        human_count=human_count
+    )
 
 
 @app.route("/admin/details")
@@ -484,10 +497,33 @@ def admin_details():
             pass
 
     logs = query.order_by(DetectionLog.created_at.desc()).all()
-    return render_template("admin_details.html", logs=logs)
+
+    ai_count = sum(1 for log in logs if log.result_label == "Cloned (AI) Voice")
+    human_count = sum(1 for log in logs if log.result_label == "Human Voice")
+
+    return render_template(
+        "admin_details.html",
+        logs=logs,
+        ai_count=ai_count,
+        human_count=human_count
+    )
 
 
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
+
+        # ✅ Create default admin if not exists
+        admin_exists = User.query.filter_by(role="admin").first()
+
+        if not admin_exists:
+            admin = User(
+                username="admin123",
+                password_hash=bcrypt.generate_password_hash("admin123").decode("utf-8"),
+                role="admin"
+            )
+            db.session.add(admin)
+            db.session.commit()
+            print("✅ Admin created: admin123 / admin123")
+
     app.run(debug=True)

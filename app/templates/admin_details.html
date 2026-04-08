@@ -23,7 +23,8 @@
       <button type="submit">Apply</button>
     </form>
 
-    <table>
+    <!-- TABLE -->
+    <table border="1" style="width:100%; margin-top:15px;">
       <tr>
         <th>Username</th>
         <th>Date (IST)</th>
@@ -32,8 +33,9 @@
         <th>Prediction</th>
         <th>Confidence</th>
       </tr>
+
       {% for log in logs %}
-        <tr>
+        <tr class="log-row" {% if loop.index > 3 %}style="display:none;"{% endif %}>
           <td>{{ log.user.username }}</td>
           <td>{{ log.created_at|ist_date }}</td>
           <td>{{ log.created_at|ist_time }}</td>
@@ -44,9 +46,80 @@
       {% endfor %}
     </table>
 
+    <!-- TOGGLE -->
+    <p id="toggleText" style="margin-top:10px; cursor:pointer; color:blue;">
+      Showing {{ 3 if logs|length > 3 else logs|length }} of {{ logs|length }} records —
+      <span>{% if logs|length > 3 %}View All{% else %}No more records{% endif %}</span>
+    </p>
+
+    <!-- PIE CHART -->
+    <h3 style="margin-top:30px; text-align:center;">Detection Distribution</h3>
+
+    <!-- ✅ SMALL SIZE CONTAINER -->
+    <div style="width:280px; height:280px; margin: 20px auto;">
+      <canvas id="adminPieChart"></canvas>
+    </div>
+
     <p style="margin-top:16px;">
       <a class="btn" href="{{ url_for('dashboard') }}">Back to Upload</a>
     </p>
   </div>
-{% endblock %}
 
+  <!-- CHART.JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- TOGGLE SCRIPT -->
+  <script>
+    let expanded = false;
+    let total = {{ logs|length }};
+    const toggle = document.getElementById("toggleText");
+
+    if (total > 3) {
+      toggle.addEventListener("click", function () {
+        let rows = document.querySelectorAll('.log-row');
+
+        if (!expanded) {
+          rows.forEach(row => row.style.display = '');
+          toggle.innerHTML = `Showing all ${total} records — <span style="color:blue;">Show Less</span>`;
+          expanded = true;
+        } else {
+          rows.forEach((row, index) => {
+            if (index >= 3) row.style.display = 'none';
+          });
+          toggle.innerHTML = `Showing 3 of ${total} records — <span style="color:blue;">View All</span>`;
+          expanded = false;
+        }
+      });
+    }
+  </script>
+
+  <!-- PIE CHART SCRIPT -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+      const ctx = document.getElementById('adminPieChart');
+
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['AI Voice', 'Human Voice'],
+          datasets: [{
+            data: [{{ ai_count }}, {{ human_count }}],
+            backgroundColor: ['#ff4d4d', '#4CAF50']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,  // ✅ important for size control
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+
+    });
+  </script>
+
+{% endblock %}

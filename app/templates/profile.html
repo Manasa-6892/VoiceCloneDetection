@@ -8,15 +8,18 @@
     <p><strong>Username:</strong> {{ current_user.username }}</p>
 
     <h3>My Detections</h3>
-    <table>
+
+    <!-- TABLE -->
+    <table border="1" style="width:100%; margin-top:15px;">
       <tr>
         <th>Date (IST)</th>
         <th>Time (IST)</th>
         <th>Audio Name</th>
         <th>Prediction Result</th>
       </tr>
+
       {% for log in logs %}
-        <tr>
+        <tr class="profile-row" {% if loop.index > 3 %}style="display:none;"{% endif %}>
           <td>{{ log.created_at|ist_date }}</td>
           <td>{{ log.created_at|ist_time }}</td>
           <td>{{ log.file_name }}</td>
@@ -25,9 +28,80 @@
       {% endfor %}
     </table>
 
+    <!-- TOGGLE -->
+    <p id="toggleTextProfile" style="margin-top:10px; cursor:pointer; color:blue;">
+      Showing {{ 3 if logs|length > 3 else logs|length }} of {{ logs|length }} records —
+      <span>{% if logs|length > 3 %}View All{% else %}No more records{% endif %}</span>
+    </p>
+
+    <!-- PIE CHART -->
+    <h3 style="margin-top:30px; text-align:center;">My Detection Distribution</h3>
+
+    <!-- SMALL SIZE -->
+    <div style="width:280px; height:280px; margin: 20px auto;">
+      <canvas id="profilePieChart"></canvas>
+    </div>
+
     <p style="margin-top:16px;">
       <a class="btn" href="{{ url_for('dashboard') }}">Back to Upload</a>
     </p>
   </div>
-{% endblock %}
 
+  <!-- CHART.JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- TOGGLE SCRIPT -->
+  <script>
+    let expandedProfile = false;
+    let totalProfile = {{ logs|length }};
+    const toggleProfile = document.getElementById("toggleTextProfile");
+
+    if (totalProfile > 3) {
+      toggleProfile.addEventListener("click", function () {
+        let rows = document.querySelectorAll('.profile-row');
+
+        if (!expandedProfile) {
+          rows.forEach(row => row.style.display = '');
+          toggleProfile.innerHTML = `Showing all ${totalProfile} records — <span style="color:blue;">Show Less</span>`;
+          expandedProfile = true;
+        } else {
+          rows.forEach((row, index) => {
+            if (index >= 3) row.style.display = 'none';
+          });
+          toggleProfile.innerHTML = `Showing 3 of ${totalProfile} records — <span style="color:blue;">View All</span>`;
+          expandedProfile = false;
+        }
+      });
+    }
+  </script>
+
+  <!-- PIE CHART SCRIPT -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+      const ctx = document.getElementById('profilePieChart');
+
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['AI Voice', 'Human Voice'],
+          datasets: [{
+            data: [{{ ai_count }}, {{ human_count }}],
+            backgroundColor: ['#ff4d4d', '#4CAF50']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+
+    });
+  </script>
+
+{% endblock %}

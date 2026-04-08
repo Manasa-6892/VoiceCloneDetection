@@ -3,8 +3,13 @@
 {% block title %}Detection Detail - Voice Clone Detection{% endblock %}
 
 {% block content %}
-  <div class="card">
-    <h2>Detection Detail</h2>
+
+<div class="card" style="max-width:700px; margin:40px auto;">
+
+  <h2 style="text-align:center;">Detection Detail</h2>
+
+  <!-- CENTER CONTENT BLOCK -->
+  <div style="max-width:300px; margin:0 auto;">
 
     <p><strong>Date (IST):</strong> {{ log.created_at|ist_date }}</p>
     <p><strong>Time (IST):</strong> {{ log.created_at|ist_time }}</p>
@@ -14,15 +19,70 @@
     <p><strong>Type:</strong> {{ log.detection_type }}</p>
     <p><strong>Suspicious:</strong> {{ 'Yes' if log.is_suspicious else 'No' }}</p>
 
-    <h3>Audio Playback</h3>
-    <audio controls>
-      <source src="{{ url_for('serve_audio', filename=log.file_name) }}" type="audio/wav">
-      Your browser does not support the audio element.
-    </audio>
+    <h3 style="margin-top:20px;">Audio Playback:</h3>
 
-    <p style="margin-top:16px;">
+    <!-- CENTER AUDIO -->
+    <div style="text-align:center;">
+      <audio controls style="width:100%; max-width:300px;">
+        <source src="{{ url_for('serve_audio', filename=log.file_name) }}">
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+
+    <!-- 🔥 SPOOFING ALERT BOX -->
+    <div style="text-align:center;">
+      <div style="
+        display:inline-block;
+        max-width:600px;
+        margin-top:25px;
+        background:#ffffff;
+        color:#111827;
+        padding:14px 18px;
+        border-radius:10px;
+        box-shadow:0 6px 16px rgba(0,0,0,0.2);
+        border-left:5px solid {% if log.result_label == 'Cloned (AI) Voice' %}#ef4444{% else %}#22c55e{% endif %};
+        text-align:left;
+      ">
+
+        {% if log.result_label == "Cloned (AI) Voice" %}
+          {% set conf = log.confidence %}
+
+          {% if conf > 0.85 %}
+            <strong style="color:#dc2626;">⚠ High Risk: Voice Spoofing Likely</strong>
+            <p style="margin-top:6px;">
+              This audio is highly risky and may be used for impersonation or fraud.
+            </p>
+
+          {% elif conf > 0.6 %}
+            <strong style="color:#eab308;">⚠ Moderate Risk: Suspicious Voice Patterns Detected</strong>
+            <p style="margin-top:6px;">
+              This audio shows characteristics of synthetic generation. Further verification is recommended.
+            </p>
+
+          {% else %}
+            <strong style="color:#0284c7;">⚠ Low Risk: Uncertain Detection</strong>
+            <p style="margin-top:6px;">
+              Minor anomalies detected. Not fully conclusive.Verification recommended
+            </p>
+          {% endif %}
+
+        {% else %}
+          <strong style="color:#16a34a;">✅ Safe: No Spoofing Detected</strong>
+          <p style="margin-top:6px;">
+            This audio appears to be a genuine human voice.
+          </p>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- BUTTON -->
+    <div style="text-align:center; margin-top:25px;">
       <a class="btn" href="{{ url_for('dashboard') }}">Upload Another File</a>
-    </p>
-  </div>
-{% endblock %}
+    </div>
 
+  </div>
+
+</div>
+
+{% endblock %}
